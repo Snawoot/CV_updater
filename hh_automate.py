@@ -128,9 +128,8 @@ def parse_args():
     parser.add_argument("-d", "--data-dir",
                         default=os.path.join(os.path.expanduser("~"),
                                              '.config',
-                                             'hhautomate',
-                                             'datadir'),
-                        help="datadir location",
+                                             'hhautomate'),
+                        help="application datadir location",
                         metavar="FILE")
     return parser.parse_args()
 
@@ -140,13 +139,15 @@ def main():
     setup_logger("UPDATE", args.verbosity)
     setup_logger("LOGIN", args.verbosity)
 
+    profile_dir = os.path.join(args.data_dir, 'profile')
+    db_path = os.path.join(args.data_dir, 'hhautomate.db')
     chrome_options = Options()
     if args.cmd is Command.update:
         chrome_options.add_argument('--headless')
     chrome_options.add_argument('--no-sandbox')
     chrome_options.add_argument('--disable-dev-shm-usage')
     chrome_options.add_argument('--disable-gpu')
-    chrome_options.add_argument('user-data-dir=' + args.data_dir)
+    chrome_options.add_argument('user-data-dir=' + profile_dir)
     browser = webdriver.Chrome(
         ChromeDriverManager(chrome_type=args.browser).install(), options=chrome_options)
 
