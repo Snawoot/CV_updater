@@ -50,6 +50,12 @@ class BrowserType(enum.Enum):
     chrome = ChromeType.GOOGLE
     chromium = ChromeType.CHROMIUM
 
+def locate_buttons(browser):
+    return list(elem for elem in browser.find_elements_by_xpath(
+        "//button[@data-qa='resume-update-button']")
+        if "bloko-link" not in elem.get_attribute("class").split()
+        )
+
 def update(browser, timeout):
     logger = logging.getLogger("UPDATE")
     browser.get("https://hh.ru/applicant/resumes")
@@ -57,8 +63,7 @@ def update(browser, timeout):
         EC.presence_of_element_located(
             (By.XPATH, "//button[@data-qa='resume-update-button']"))
     )
-    update_buttons = browser.find_elements_by_xpath(
-        "//button[@data-qa='resume-update-button']")
+    update_buttons = locate_buttons(browser)
     logger.info("Located %d update buttons", len(update_buttons))
     for elem in update_buttons:
         elem.click()
