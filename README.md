@@ -1,5 +1,5 @@
-# CV_updater
-Python script to update your CV on https://hh.ru/ every 4 hours 
+# CV\_updater
+Python script to update your CV on https://hh.ru/
 
 ## Requirements 
 You need to have installed Chromium browser.

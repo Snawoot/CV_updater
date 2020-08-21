@@ -46,6 +46,10 @@ class Command(enum.Enum):
     def __str__(self):
         return self.name
 
+class BrowserType(enum.Enum):
+    chrome = ChromeType.GOOGLE
+    chromium = ChromeType.CHROMIUM
+
 def update(browser, timeout):
     logger = logging.getLogger("UPDATE")
     browser.get("https://hh.ru/applicant/resumes")
@@ -84,6 +88,12 @@ def parse_args():
         except (IndexError, KeyError):
             raise argparse.ArgumentTypeError("%s is not valid command" % (repr(arg),))
 
+    def check_browser_type(arg):
+        try:
+            return BrowserType[arg]
+        except (IndexError, KeyError):
+            raise argparse.ArgumentTypeError("%s is not valid browser type" % (repr(arg),))
+
     def check_positive_float(arg):
         def fail():
             raise argparse.ArgumentTypeError("%s is not valid positive float" % (repr(arg),))
@@ -96,12 +106,17 @@ def parse_args():
         return fvalue
 
     parser = argparse.ArgumentParser(
-        description="Fetches free proxy list via Hola browser extension API",
+        description="Python script to update your CV",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("-t", "--timeout",
                         help="webdriver wait timeout",
                         type=check_positive_float,
                         default=10.)
+    parser.add_argument("-b", "--browser",
+                        help="browser type",
+                        type=check_browser_type,
+                        choices=BrowserType,
+                        default=BrowserType.chromium)
     parser.add_argument("-v", "--verbosity",
                         help="logging verbosity",
                         type=check_loglevel,
@@ -115,7 +130,7 @@ def parse_args():
                                              '.config',
                                              'hhautomate',
                                              'datadir'),
-                        help="Chromium datadir location",
+                        help="datadir location",
                         metavar="FILE")
     return parser.parse_args()
 
@@ -133,7 +148,7 @@ def main():
     chrome_options.add_argument('--disable-gpu')
     chrome_options.add_argument('user-data-dir=' + args.data_dir)
     browser = webdriver.Chrome(
-        ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install(), options=chrome_options)
+        ChromeDriverManager(chrome_type=args.browser).install(), options=chrome_options)
 
     if args.cmd is Command.login:
         login(browser)
