@@ -2,20 +2,18 @@
 Python script to update your CV on https://hh.ru/ every 4 hours 
 
 ## Requirements 
-You need to have installed Google Chrome browser
+You need to have installed Chromium browser.
 
-Also you need to install python3 and modules from requirement.txt
+Also you need to install python3 and modules from requirements.txt
 
 You can do it with a command
 
 `pip3 install -r requirements.txt `
 
 ## Set your account
-To set your account data you need to write your email and password in config.py
 
-## Launch command
+`python3 hh_automate.py login`
 
-`python3 hh_automate.py`
+## Update all resumes
 
-
-
+`python3 hh_automate.py update`
