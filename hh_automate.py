@@ -56,6 +56,10 @@ def locate_buttons(browser):
         if "bloko-link" not in elem.get_attribute("class").split()
         )
 
+def buttons_disabled(browser):
+    return all(elem.get_attribute("disabled") is not None
+               for elem in locate_buttons(browser))
+
 def update(browser, timeout):
     logger = logging.getLogger("UPDATE")
     browser.get("https://hh.ru/applicant/resumes")
@@ -69,6 +73,7 @@ def update(browser, timeout):
         elem.click()
         sleep(1 + 2 * random())
         logger.debug('click!')
+    WebDriverWait(browser, timeout).until(buttons_disabled)
     logger.info('Updated!')
 
 def login(browser):
@@ -178,11 +183,16 @@ def main():
     setup_logger("LOGIN", args.verbosity)
 
     profile_dir = os.path.join(args.data_dir, 'profile')
-    browser_factory = BrowserFactory(profile_dir, args.browser.value, args.cmd is Command.update)
+    browser_factory = BrowserFactory(profile_dir,
+                                     args.browser.value,
+                                     args.cmd is Command.update)
 
     if args.cmd is Command.login:
+        mainlogger.info("Login mode. Please enter your credentials in opened "
+                        "browser window.")
         do_login(browser_factory)
     elif args.cmd is Command.update:
+        mainlogger.info("Update mode. Running headless browser.")
         db_path = os.path.join(args.data_dir, 'hhautomate.db')
         do_update(browser_factory, args.timeout)
 
