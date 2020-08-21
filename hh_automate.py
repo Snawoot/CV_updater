@@ -150,10 +150,13 @@ def main():
     browser = webdriver.Chrome(
         ChromeDriverManager(chrome_type=args.browser).install(), options=chrome_options)
 
-    if args.cmd is Command.login:
-        login(browser)
-    elif args.cmd is Command.update:
-        update(browser, args.timeout)
+    try:
+        if args.cmd is Command.login:
+            login(browser)
+        elif args.cmd is Command.update:
+            update(browser, args.timeout)
+    finally:
+        browser.quit()
 
 if __name__ == "__main__":
     main()
