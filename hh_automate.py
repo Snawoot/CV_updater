@@ -138,6 +138,39 @@ def parse_args():
                         metavar="FILE")
     return parser.parse_args()
 
+class BrowserFactory:
+    def __init__(self, profile_dir, browser_type, headless=True):
+        chrome_options = Options()
+        # option below causes webdriver process remaining in memory
+        # chrome_options.add_argument('--no-sandbox')
+        chrome_options.add_argument('--disable-dev-shm-usage')
+        chrome_options.add_argument('--disable-gpu')
+        chrome_options.add_argument('user-data-dir=' + profile_dir)
+        if headless:
+            chrome_options.add_argument('--headless')
+        self._options = chrome_options
+        self._type = browser_type
+
+    def new(self):
+        return webdriver.Chrome(
+            ChromeDriverManager(chrome_type=self._type).install(),
+            options=self._options)
+
+
+def do_login(browser_factory):
+    browser = browser_factory.new()
+    try:
+        login(browser)
+    finally:
+        browser.quit()
+
+def do_update(browser_factory, timeout):
+    browser = browser_factory.new()
+    try:
+        update(browser, timeout)
+    finally:
+        browser.quit()
+
 def main():
     args = parse_args()
     mainlogger = setup_logger("MAIN", args.verbosity)
@@ -145,24 +178,13 @@ def main():
     setup_logger("LOGIN", args.verbosity)
 
     profile_dir = os.path.join(args.data_dir, 'profile')
-    db_path = os.path.join(args.data_dir, 'hhautomate.db')
-    chrome_options = Options()
-    if args.cmd is Command.update:
-        chrome_options.add_argument('--headless')
-    chrome_options.add_argument('--no-sandbox')
-    chrome_options.add_argument('--disable-dev-shm-usage')
-    chrome_options.add_argument('--disable-gpu')
-    chrome_options.add_argument('user-data-dir=' + profile_dir)
-    browser = webdriver.Chrome(
-        ChromeDriverManager(chrome_type=args.browser).install(), options=chrome_options)
+    browser_factory = BrowserFactory(profile_dir, args.browser.value, args.cmd is Command.update)
 
-    try:
-        if args.cmd is Command.login:
-            login(browser)
-        elif args.cmd is Command.update:
-            update(browser, args.timeout)
-    finally:
-        browser.quit()
+    if args.cmd is Command.login:
+        do_login(browser_factory)
+    elif args.cmd is Command.update:
+        db_path = os.path.join(args.data_dir, 'hhautomate.db')
+        do_update(browser_factory, args.timeout)
 
 if __name__ == "__main__":
     main()
