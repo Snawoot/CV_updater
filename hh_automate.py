@@ -17,7 +17,9 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import TimeoutException
+from selenium.common.exceptions import (TimeoutException,
+                                        StaleElementReferenceException,
+                                        NoSuchElementException)
 from webdriver_manager.chrome import ChromeDriverManager
 from webdriver_manager.utils import ChromeType
 
@@ -94,8 +96,16 @@ def locate_buttons(browser, anyclass=False):
     )
 
 def buttons_disabled_condition(browser):
-    return all(elem.get_attribute("disabled") is not None
-               for elem in locate_buttons(browser))
+    while True:
+        try:
+            for elem in locate_buttons(browser):
+                if elem.get_attribute("disabled") is None:
+                    return False
+            return True
+        except StaleElementReferenceException:
+            pass
+        except NoSuchElementException:
+            pass
 
 def button_wait_condition(browser):
     return len(locate_buttons(browser, True)) > 0
