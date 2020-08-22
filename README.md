@@ -1,7 +1,7 @@
 hh-cv-updater
 =============
 
-Python script to update your CV on https://hh.ru/
+Python script to update your CV on https://hh.ru/ every 4 hours.
 
 ## Requirements 
 
@@ -42,6 +42,11 @@ Application will be running continously, updating all your CV's in random interv
 ├── hhautomate.db # SQLite database with last update timestamp
 └── profile       # browser profile
 ```
+
+## Running on remote server
+
+* Option 1: use X forwading via SSH in order to perform login via browser UI: `ssh -Y user@host`
+* Option 2: perform login on your local system and copy datadir to remote server
 
 ## Synopsis
 
