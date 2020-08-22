@@ -2,18 +2,33 @@
 Python script to update your CV on https://hh.ru/
 
 ## Requirements 
+
 You need to have installed Chromium browser.
 
-Also you need to install python3 and modules from requirements.txt
+## Installation
 
-You can do it with a command
+Run within source directory:
 
-`pip3 install -r requirements.txt `
+`pip3 install .`
+
+`hh-cv-updater` executable command should become immediately available. Alternatively, you may invoke application with `python3 -m hh_cv_updater ...` command
 
 ## Set your account
 
-`python3 hh_automate.py login`
+Run:
+
+```
+hh-cv-updater login
+```
+
+Browser window will pop up, prompting user to login. Once login will be acknowledged by application, browser window will be closed.
 
 ## Update all resumes
 
-`python3 hh_automate.py update`
+Run:
+
+```
+hh-cv-updater update
+```
+
+Application will be running continously, updating all your CV's in random intervals about to 4 hours. If application is being restarted, it will figure out next update from own records on last update.
