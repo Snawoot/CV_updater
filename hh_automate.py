@@ -3,6 +3,7 @@
 import logging
 import argparse
 import enum
+import os
 import os.path
 from time import sleep
 from random import randrange, random
@@ -200,6 +201,7 @@ def main():
     setup_logger("UPDATE", args.verbosity)
     setup_logger("LOGIN", args.verbosity)
 
+    os.makedirs(args.data_dir, mode=0o700, exist_ok=True)
     profile_dir = os.path.join(args.data_dir, 'profile')
     browser_factory = BrowserFactory(profile_dir,
                                      args.browser.value,
