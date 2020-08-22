@@ -7,7 +7,7 @@ import os
 import os.path
 import sqlite3
 import signal
-from time import sleep, time
+from time import sleep, time, ctime
 from random import randrange, random
 from urllib.parse import urlparse, urlunparse, urlencode
 
@@ -269,7 +269,8 @@ def random_interval():
 def update_loop(browser_factory, tracker, timeout):
     logger = logging.getLogger("UPDATE")
     last_ts = tracker.last_update()
-    logger.info("Starting scheduler. Last update @ %.3f", last_ts)
+    logger.info("Starting scheduler. Last update @ %.3f (%s)",
+                last_ts, ctime(last_ts))
     delay = last_ts + random_interval() - time()
     if delay > 0:
         logger.info("Waiting %.3f seconds for next update...", delay)
