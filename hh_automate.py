@@ -1,7 +1,14 @@
 #!/usr/bin/env python3
 
-from selenium import webdriver
+import logging
+import argparse
+import enum
+import os.path
+from time import sleep
 from random import randrange, random
+from urllib.parse import urlparse, urlunparse, urlencode
+
+from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
@@ -10,11 +17,20 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 from webdriver_manager.chrome import ChromeDriverManager
 from webdriver_manager.utils import ChromeType
-from time import sleep
-import logging
-import argparse
-import enum
-import os.path
+
+RESUME_LIST_URL = "https://hh.ru/applicant/resumes"
+LOGIN_BASE_URL = "https://hh.ru/account/login"
+LOGIN_FINAL_URL = urlunparse(
+    urlparse(LOGIN_BASE_URL)._replace(
+        query=urlencode(
+            {
+                "backurl": urlparse(RESUME_LIST_URL).path,
+            }
+        )
+    )
+)
+UPDATE_BUTTON_XPATH = "//button[@data-qa='resume-update-button']"
+UPDATE_LINK_FILTER_CLASS = "bloko-link"
 
 def setup_logger(name, verbosity):
     logger = logging.getLogger(name)
@@ -52,9 +68,10 @@ class BrowserType(enum.Enum):
 
 def locate_buttons(browser, anyclass=False):
     return list(elem for elem in browser.find_elements_by_xpath(
-        "//button[@data-qa='resume-update-button']")
-        if "bloko-link" not in elem.get_attribute("class").split() or anyclass
-        )
+        UPDATE_BUTTON_XPATH)
+        if UPDATE_LINK_FILTER_CLASS not in elem.get_attribute("class").split()
+        or anyclass
+    )
 
 def buttons_disabled_condition(browser):
     return all(elem.get_attribute("disabled") is not None
@@ -65,7 +82,7 @@ def button_wait_condition(browser):
 
 def update(browser, timeout):
     logger = logging.getLogger("UPDATE")
-    browser.get("https://hh.ru/applicant/resumes")
+    browser.get(RESUME_LIST_URL)
     wait_page_to_load = WebDriverWait(browser, timeout).until(
         button_wait_condition
     )
@@ -80,7 +97,7 @@ def update(browser, timeout):
 
 def login(browser):
     logger = logging.getLogger("LOGIN")
-    browser.get("https://hh.ru/account/login?backurl=%2Fapplicant%2Fresumes")
+    browser.get(LOGIN_FINAL_URL)
     wait_page_to_load = WebDriverWait(browser, 3600).until(
         button_wait_condition
     )
