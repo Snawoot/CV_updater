@@ -88,6 +88,9 @@ class BrowserType(enum.Enum):
     chrome = ChromeType.GOOGLE
     chromium = ChromeType.CHROMIUM
 
+    def __str__(self):
+        return self.name
+
 def locate_buttons(browser, anyclass=False):
     return list(elem for elem in browser.find_elements_by_xpath(
         UPDATE_BUTTON_XPATH)
