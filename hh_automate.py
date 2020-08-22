@@ -70,8 +70,8 @@ def update(browser, timeout):
     update_buttons = locate_buttons(browser)
     logger.info("Located %d update buttons", len(update_buttons))
     for elem in update_buttons:
-        elem.click()
         sleep(1 + 2 * random())
+        elem.click()
         logger.debug('click!')
     WebDriverWait(browser, timeout).until(buttons_disabled)
     logger.info('Updated!')
