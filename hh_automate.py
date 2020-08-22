@@ -50,22 +50,24 @@ class BrowserType(enum.Enum):
     chrome = ChromeType.GOOGLE
     chromium = ChromeType.CHROMIUM
 
-def locate_buttons(browser):
+def locate_buttons(browser, anyclass=False):
     return list(elem for elem in browser.find_elements_by_xpath(
         "//button[@data-qa='resume-update-button']")
-        if "bloko-link" not in elem.get_attribute("class").split()
+        if "bloko-link" not in elem.get_attribute("class").split() or anyclass
         )
 
-def buttons_disabled(browser):
+def buttons_disabled_condition(browser):
     return all(elem.get_attribute("disabled") is not None
                for elem in locate_buttons(browser))
+
+def button_wait_condition(browser):
+    return len(locate_buttons(browser, True)) > 0
 
 def update(browser, timeout):
     logger = logging.getLogger("UPDATE")
     browser.get("https://hh.ru/applicant/resumes")
     wait_page_to_load = WebDriverWait(browser, timeout).until(
-        EC.presence_of_element_located(
-            (By.XPATH, "//button[@data-qa='resume-update-button']"))
+        button_wait_condition
     )
     update_buttons = locate_buttons(browser)
     logger.info("Located %d update buttons", len(update_buttons))
@@ -73,15 +75,14 @@ def update(browser, timeout):
         sleep(1 + 2 * random())
         elem.click()
         logger.debug('click!')
-    WebDriverWait(browser, timeout).until(buttons_disabled)
+    WebDriverWait(browser, timeout).until(buttons_disabled_condition)
     logger.info('Updated!')
 
 def login(browser):
     logger = logging.getLogger("LOGIN")
     browser.get("https://hh.ru/account/login?backurl=%2Fapplicant%2Fresumes")
     wait_page_to_load = WebDriverWait(browser, 3600).until(
-        EC.presence_of_element_located(
-            (By.XPATH, "//button[@data-qa='resume-update-button']"))
+        button_wait_condition
     )
     logger.info('Successfully logged in!')
 
