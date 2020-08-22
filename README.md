@@ -33,6 +33,14 @@ hh-cv-updater update
 
 Application will be running continously, updating all your CV's in random intervals about to 4 hours. If application is being restarted, it will figure out next update from own records on last update.
 
+## Datadir structure
+
+```
+~/.config/hh-cv-updater
+├── hhautomate.db # SQLite database with last update timestamp
+└── profile       # browser profile
+```
+
 ## Synopsis
 
 ```
@@ -56,5 +64,5 @@ optional arguments:
                         logging verbosity (default: info)
   -d FILE, --data-dir FILE
                         application datadir location (default:
-                        /home/user/.config/hhautomate)
+                        /home/user/.config/hh-cv-updater)
 ```
