@@ -192,11 +192,11 @@ class BrowserFactory:
         if headless:
             chrome_options.add_argument('--headless')
         self._options = chrome_options
-        self._type = browser_type
+        self._driver = ChromeDriverManager(chrome_type=browser_type).install()
 
     def new(self):
         return webdriver.Chrome(
-            ChromeDriverManager(chrome_type=self._type).install(),
+            self._driver,
             options=self._options)
 
 class UpdateTracker:
