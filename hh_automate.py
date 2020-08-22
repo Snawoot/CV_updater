@@ -5,6 +5,7 @@ import argparse
 import enum
 import os
 import os.path
+import sqlite3
 from time import sleep
 from random import randrange, random
 from urllib.parse import urlparse, urlunparse, urlencode
@@ -32,6 +33,13 @@ LOGIN_FINAL_URL = urlunparse(
 )
 UPDATE_BUTTON_XPATH = "//button[@data-qa='resume-update-button']"
 UPDATE_LINK_FILTER_CLASS = "bloko-link"
+
+DB_INIT = [
+    "CREATE TABLE IF NOT EXISTS update_ts (\n"
+    "name TEXT PRIMARY KEY,\n"
+    "value REAL NOT NULL DEFAULT 0)\n"
+]
+
 
 def setup_logger(name, verbosity):
     logger = logging.getLogger(name)
@@ -180,6 +188,41 @@ class BrowserFactory:
             ChromeDriverManager(chrome_type=self._type).install(),
             options=self._options)
 
+class UpdateTracker:
+    def __init__(self, dbpath):
+        conn = sqlite3.connect(dbpath)
+        cur = conn.cursor()
+        try:
+            for q in DB_INIT:
+                cur.execute(q)
+            conn.commit()
+            cur.execute("SELECT 1 FROM update_ts WHERE name = ?", ("last",))
+            if cur.fetchone() is None:
+                cur.execute("INSERT INTO update_ts (name, value) VALUES (?,?)",
+                            ("last", 0.))
+                conn.commit()
+        finally:
+            cur.close()
+        self._conn = conn
+
+    def last_update(self):
+        cur = self._conn.cursor()
+        try:
+            cur.execute("SELECT value FROM update_ts WHERE name = ?",
+                        ("last",))
+            return cur.fetchone()[0]
+        finally:
+            cur.close()
+
+    def update(self, ts):
+        c = self._conn
+        with c:
+            c.execute("UPDATE update_ts SET value = ? WHERE name = ? AND value < ?",
+                      (float(ts), "last", float(ts)))
+
+    def close(self):
+        self._conn.close()
+        self._conn = None
 
 def do_login(browser_factory):
     browser = browser_factory.new()
