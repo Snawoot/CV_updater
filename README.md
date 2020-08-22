@@ -1,9 +1,11 @@
-# CV\_updater
+hh-cv-updater
+=============
+
 Python script to update your CV on https://hh.ru/
 
 ## Requirements 
 
-You need to have installed Chromium browser.
+You need to have installed Chromium or Google Chrome browser.
 
 ## Installation
 
@@ -44,7 +46,7 @@ Application will be running continously, updating all your CV's in random interv
 ## Synopsis
 
 ```
-> hh-cv-updater -h
+$ hh-cv-updater -h
 usage: hh-cv-updater [-h] [-t TIMEOUT] [-b {chrome,chromium}]
                      [-v {debug,info,warn,error,fatal}] [-d FILE]
                      {login,update}
@@ -64,5 +66,5 @@ optional arguments:
                         logging verbosity (default: info)
   -d FILE, --data-dir FILE
                         application datadir location (default:
-                        /home/user/.config/hh-cv-updater)
+                        ~/.config/hh-cv-updater)
 ```
