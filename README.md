@@ -32,3 +32,29 @@ hh-cv-updater update
 ```
 
 Application will be running continously, updating all your CV's in random intervals about to 4 hours. If application is being restarted, it will figure out next update from own records on last update.
+
+## Synopsis
+
+```
+> hh-cv-updater -h
+usage: hh-cv-updater [-h] [-t TIMEOUT] [-b {chrome,chromium}]
+                     [-v {debug,info,warn,error,fatal}] [-d FILE]
+                     {login,update}
+
+Python script to update your CV
+
+positional arguments:
+  {login,update}        command
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -t TIMEOUT, --timeout TIMEOUT
+                        webdriver wait timeout (default: 10.0)
+  -b {chrome,chromium}, --browser {chrome,chromium}
+                        browser type (default: chromium)
+  -v {debug,info,warn,error,fatal}, --verbosity {debug,info,warn,error,fatal}
+                        logging verbosity (default: info)
+  -d FILE, --data-dir FILE
+                        application datadir location (default:
+                        /home/user/.config/hhautomate)
+```
