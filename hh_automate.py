@@ -44,6 +44,13 @@ DB_INIT = [
     "value REAL NOT NULL DEFAULT 0)\n"
 ]
 
+def wall_clock_sleep(duration, precision=1.):
+    """ Sleep variation which is doesn't increases
+    sleep duration when computer enters suspend/hybernation
+    """
+    end_time = time() + duration
+    while time() < end_time:
+        sleep(precision)
 
 def setup_logger(name, verbosity):
     logger = logging.getLogger(name)
@@ -253,7 +260,7 @@ def update_loop(browser_factory, tracker, timeout):
     delay = last_ts + random_interval() - time()
     if delay > 0:
         logger.info("Waiting %.3f seconds for next update...", delay)
-        sleep(delay)
+        wall_clock_sleep(delay)
     while True:
         try:
             logger.info("Updating now!")
@@ -266,7 +273,7 @@ def update_loop(browser_factory, tracker, timeout):
             tracker.update(time())
         delay = random_interval()
         logger.info("Waiting %.3f seconds for next update...", delay)
-        sleep(delay)
+        wall_clock_sleep(delay)
 
 def sig_handler(signum, frame):
     raise KeyboardInterrupt
