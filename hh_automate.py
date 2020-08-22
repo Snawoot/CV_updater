@@ -6,7 +6,8 @@ import enum
 import os
 import os.path
 import sqlite3
-from time import sleep
+import signal
+from time import sleep, time
 from random import randrange, random
 from urllib.parse import urlparse, urlunparse, urlencode
 
@@ -33,6 +34,9 @@ LOGIN_FINAL_URL = urlunparse(
 )
 UPDATE_BUTTON_XPATH = "//button[@data-qa='resume-update-button']"
 UPDATE_LINK_FILTER_CLASS = "bloko-link"
+UPDATE_INTERVAL = 4 * 3600
+UPDATE_INTERVAL_MIN_DRIFT = 10
+UPDATE_INTERVAL_MAX_DRIFT = 60
 
 DB_INIT = [
     "CREATE TABLE IF NOT EXISTS update_ts (\n"
@@ -238,6 +242,35 @@ def do_update(browser_factory, timeout):
     finally:
         browser.quit()
 
+def random_interval():
+    return UPDATE_INTERVAL + UPDATE_INTERVAL_MIN_DRIFT + \
+        random() * (UPDATE_INTERVAL_MAX_DRIFT - UPDATE_INTERVAL_MIN_DRIFT)
+
+def update_loop(browser_factory, tracker, timeout):
+    logger = logging.getLogger("UPDATE")
+    last_ts = tracker.last_update()
+    logger.info("Starting scheduler. Last update @ %.3f", last_ts)
+    delay = last_ts + random_interval() - time()
+    if delay > 0:
+        logger.info("Waiting %.3f seconds for next update...", delay)
+        sleep(delay)
+    while True:
+        try:
+            logger.info("Updating now!")
+            do_update(browser_factory, timeout)
+        except KeyboardInterrupt:
+            raise
+        except Exception as exc:
+            logger.exception("Update failed: %s", str(exc))
+        else:
+            tracker.update(time())
+        delay = random_interval()
+        logger.info("Waiting %.3f seconds for next update...", delay)
+        sleep(delay)
+
+def sig_handler(signum, frame):
+    raise KeyboardInterrupt
+
 def main():
     args = parse_args()
     mainlogger = setup_logger("MAIN", args.verbosity)
@@ -256,8 +289,16 @@ def main():
         do_login(browser_factory)
     elif args.cmd is Command.update:
         mainlogger.info("Update mode. Running headless browser.")
+        signal.signal(signal.SIGTERM, sig_handler)
         db_path = os.path.join(args.data_dir, 'hhautomate.db')
-        do_update(browser_factory, args.timeout)
+        tracker = UpdateTracker(db_path)
+        try:
+            update_loop(browser_factory, tracker, args.timeout)
+        except KeyboardInterrupt:
+            pass
+        finally:
+            mainlogger.info("Shutting down...")
+            tracker.close()
 
 if __name__ == "__main__":
     main()
